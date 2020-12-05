@@ -124,6 +124,13 @@ venv.bak/
 .mypy_cache/
 .dmypy.json
 dmypy.json
+*.npy
 
 # Pyre type checker
 .pyre/
+
+# logs
+log
+
+# dataset
+vox1_dev_wav
