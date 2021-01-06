@@ -21,12 +21,13 @@ from SSO import SSO
 # from Proposed import Proposed
 from net.CNN_model import CNN_model
 # from plot_results import plot_res
-#import getGFCC
+# import getGFCC
 from spafe.features.gfcc import gfcc
 from sklearn.preprocessing import LabelEncoder, StandardScaler
 from encoder import LabelEncoder
 import speechpy
 import warnings
+import numpy.matlib
 warnings.filterwarnings("ignore")
 
 
@@ -84,7 +85,7 @@ if ch == 1:
                 print(label)
                 label_id = encoder.add(label)
                 label_vectors.append(label_id)
-                labels = np.zeros((1, 1251))
+                labels = np.zeros((1, 20))
                 #labels = np.zeros((1, num))
                 #print(labels)
                 lab = int(path[len(path)-4:len(path)])
@@ -110,28 +111,32 @@ if ch == 1:
    
 
     print(Feat.shape)   # (2787, 1042)
-    print(Tar.shape)    # (2787, 1251)
+    print(Tar.shape)    # (2787, 20)
     print(Tr.shape)     # (2787,)
     print(label_vectors)
     #results = CNN_model(Feat, Tar, Tr, 0.85*100, 200, 2)
     #np.save('tempResults.npy',results)
-    np.save('Feat_291120.npy', Feat)
-    np.save('Labels_291120.npy', Tar)
-    np.save('Labels_encode_291120.npy', label_vectors)
+    np.save('Feat_020121.npy', Feat)
+    np.savetxt("Feat_020121.csv", Feat, delimiter=",")
+    np.save('Labels_020121.npy', Tar)
+    np.savetxt("Labels_020121.csv", Tar, delimiter=",")
+    np.save('Labels_encode_020121.npy', label_vectors)
+    np.savetxt("Labels_encode_020121.csv", label_vectors, delimiter=",")
+
 else:
-    Feat = np.load('Feat_291120.npy')
-    Tar = np.load('Labels_291120.npy')
-    Tr = np.load('Labels_encode_291120.npy')
+    Feat = np.load('Feat_020121.npy')
+    Tar = np.load('Labels_020121.npy')
+    Tr = np.load('Labels_encode_020121.npy')
     print(Feat.shape)
     print(Tar.shape)
     print(Tr.shape)
-    results = CNN_model(Feat, Tar, Tr, 0.85*100, 200, 2)
-    np.save('100SprsResults.npy',results)
+    # results = CNN_model(Feat, Tar, Tr, 0.85*100, 200, 2)
+    # np.save('100SprsResults.npy',results)
     
 
 
 ####################### Optimal feature selection and Classification#########################
-an = 0
+an = 1
 if an == 1:
     sequence = [v2 for v2 in range(Feat.shape[0])]
     shuffle(sequence)  # Shuffled Index
@@ -139,8 +144,8 @@ if an == 1:
     Tar = Tar[sequence, :]
     Tr = Tr[sequence]
 
-    Npop = 10  # population size
-    ch_len = 28 +1  # Solution length
+    Npop = 20  # population size
+    ch_len = 18 + 1  # Solution length
     xmin = np.matlib.repmat(np.concatenate([np.zeros((1, ch_len)), 5], axis=None), Npop, 1)
     xmax = np.matlib.repmat(np.concatenate([Feat.shape[1]-1 * np.ones((1, ch_len)), 255], axis=None), Npop, 1)
     initsol = np.zeros((xmax.shape))
@@ -148,9 +153,22 @@ if an == 1:
         for p2 in range(xmax.shape[1]):
             initsol[p1, p2] = uniform(xmin[p1, p2], xmax[p1, p2])
     fname = 'Obj_fun'
-    Max_iter = 25
+    Max_iter = 1
+    # print(initsol.shape)
 
     print("SSO...")
-    [bestfit, fitness, bestsol, time] = SSO(initsol, fname, xmin, xmax, Max_iter,Feat, Tar, Tr)  
+    [bestfit, fitness, bestsol, time] = SSO(initsol, fname, xmin, xmax, Max_iter, Feat, Tar, Tr)
 
     np.save('bestsol.npy', bestsol)
+
+    # array([[ 724.19058656,  925.23949655,  983.81622341,  489.02540102,
+    #      248.30276763,  247.83312184,  182.64376998,  499.81998313,
+    #       17.24889977,  855.42830708,  194.96897484,  296.60791002,
+    #      227.41057205, 1013.77545639,  603.99362592,  760.296382  ,
+    #      743.10882099,  233.41152031,  396.72476572,  192.31126365]])
+
+    # array([[ 918.22556253,  392.73049752,  863.17733115,  513.94602543,
+    #      827.09969782,  304.92198609, 1015.6800973 ,  342.66882845,
+    #      266.612029  ,  209.93503492,  764.2901169 ,   52.48465795,
+    #      665.01243928,  122.10629256,  665.52894985,  492.46032004,
+    #      239.90272613,  211.05901204, 1004.13359065,  251.79266279]])

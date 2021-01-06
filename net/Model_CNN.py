@@ -11,32 +11,41 @@ def define_model(hn):
 
     # tf.reset_default_graph()
     ops.reset_default_graph()
-    convnet = input_data(shape=[None, 28, 28, 1], name='input')
 
-    convnet = conv_2d(convnet, 32, 5, activation='relu')
-    convnet = max_pool_2d(convnet, 5)
+    x = input_data(shape = [None, 1042], name = 'input')
+    x = fully_connected(x, 512, activation = 'relu')
+    x = fully_connected(x, 20, activation = 'softmax')
+    print(x.shape)
+    x = regression(x, optimizer='adam', learning_rate=LR,
+                loss='categorical_crossentropy', name='targets')
+    model = tflearn.DNN(x, tensorboard_dir='log')
 
-    convnet = conv_2d(convnet, 64, 5, activation='relu')
-    convnet = max_pool_2d(convnet, 5)
+    # convnet = input_data(shape=[None, 28, 28, 1], name='input')
 
-    convnet = conv_2d(convnet, hn, 5, activation='relu')
-    convnet = max_pool_2d(convnet, 5)
+    # convnet = conv_2d(convnet, 32, 5, activation='relu')
+    # convnet = max_pool_2d(convnet, 5)
 
-    convnet = conv_2d(convnet, 64, 5, activation='relu')
-    convnet = max_pool_2d(convnet, 5)
+    # convnet = conv_2d(convnet, 64, 5, activation='relu')
+    # convnet = max_pool_2d(convnet, 5)
 
-    convnet = conv_2d(convnet, 32, 5, activation='relu')
-    convnet = max_pool_2d(convnet, 5)
+    # convnet = conv_2d(convnet, hn, 5, activation='relu')
+    # convnet = max_pool_2d(convnet, 5)
 
-    convnet = fully_connected(convnet, 1024, activation='relu')
-    convnet = dropout(convnet, 0.8)
+    # convnet = conv_2d(convnet, 64, 5, activation='relu')
+    # convnet = max_pool_2d(convnet, 5)
 
-    convnet = fully_connected(convnet, 2, activation='softmax')
+    # convnet = conv_2d(convnet, 32, 5, activation='relu')
+    # convnet = max_pool_2d(convnet, 5)
 
-    convnet = regression(convnet, optimizer='adam', learning_rate=LR,
-                     loss='categorical_crossentropy', name='targets')
+    # convnet = fully_connected(convnet, 1024, activation='relu')
+    # convnet = dropout(convnet, 0.8)
 
-    model = tflearn.DNN(convnet, tensorboard_dir='log')
+    # convnet = fully_connected(convnet, 2, activation='softmax')
+
+    # convnet = regression(convnet, optimizer='adam', learning_rate=LR,
+    #                  loss='categorical_crossentropy', name='targets')
+
+    # model = tflearn.DNN(convnet, tensorboard_dir='log')
     return model
 
 

@@ -2,14 +2,14 @@ import numpy as np
 import time
 from obj_fun import obj_fun
 
-def SSO(val, objfun, x_min, x_max, kmax):
-    N, D = val.shape
+def SSO(val, objfun, x_min, x_max, kmax, Feat, Tar, Tr):
+    N, D = val.shape # N speakers D features
     vel = np.random.rand(N, D)
     
     alphak = np.random.rand()
     betak = np.random.rand()
 
-    fbst = np.random.rand(kmax)
+    fbst = np.random.rand(1, kmax)
     best_sub = np.random.rand(kmax, N)
 
     t = 1       # time interval stage of k
@@ -17,11 +17,13 @@ def SSO(val, objfun, x_min, x_max, kmax):
     x = val.copy()
 
     # f = np.apply_along_axis(objfun, 0, x)
-    f = np.amax(x, 0)
+    # f = np.amax(x, 0)
+    f = obj_fun(x, Feat, Tr, Tar)
 
     # find global best and particle best
     fgbest = np.amin(f)
-    igbest = np.where(f == fgbest)[0].item()
+    igbest = np.where(f == fgbest)[0][0].item()
+    # print(f, fgbest, igbest)
     
     gbest = x[igbest,:]
     pbest = x
@@ -55,9 +57,13 @@ def SSO(val, objfun, x_min, x_max, kmax):
                     x[mi, mj] = x_max[mi, mj]
 
         # f = np.apply_along_axis(objfun, 0, x)
-        f = np.amax(x, 0)
+        # f = np.amax(x, 0)
+        f = obj_fun(x, Feat, Tr, Tar)
         minf = np.amin(f)
-        iminf = np.where(f == minf)[0].item()
+        iminf = np.where(f == minf)[0][0].item()
+        # print(f, minf, iminf)
+
+        # print(best_sub.shape, gbest.shape)
 
         if minf <= fgbest:
             fgbest = minf

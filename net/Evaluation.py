@@ -1,7 +1,7 @@
 import numpy as np
 import math
 
-def evaln(sp,act):
+def evaln(sp, act):
     Tp = np.zeros((len(act), 1))
     Fp = np.zeros((len(act), 1))
     Tn = np.zeros((len(act), 1))
@@ -12,13 +12,13 @@ def evaln(sp,act):
         tp = 0; tn = 0; fp = 0; fn = 0
         for j in range(len(p)):
             if a[j] == 1 and p[j] == 1:
-                tp = tp + 1
+                tp += 1
             elif a[j] == 0 and p[j] == 0:
-                tn = tn + 1
+                tn += 1
             elif a[j] == 0 and p[j] == 1:
-                fp = fp + 1
+                fp += 1
             elif a[j] == 1 and p[j] == 0:
-                fn = fn + 1
+                fn += 1
         Tp[i] = tp
         Fp[i] = fp
         Tn[i] = tn
