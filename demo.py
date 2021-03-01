@@ -30,6 +30,9 @@ import warnings
 import numpy.matlib
 warnings.filterwarnings("ignore")
 
+import logging
+logging.basicConfig(filename='SSO.log', filemode='a', format='%(asctime)s - %(message)s', level=logging.INFO)
+logging.info('Program Start')
 
 print('Processing...')
 ch = int(input("Create Features: 1-yes, 0-no"))
@@ -130,6 +133,7 @@ else:
     print(Feat.shape)
     print(Tar.shape)
     print(Tr.shape)
+    logging.info('Feat shape: {0}\nTar shape: {1}\nTr shape: {2}'.format(Feat.shape, Tar.shape, Tr.shape))
     # results = CNN_model(Feat, Tar, Tr, 0.85*100, 200, 2)
     # np.save('100SprsResults.npy',results)
     
@@ -143,23 +147,32 @@ if an == 1:
     Feat = Feat[sequence, :]
     Tar = Tar[sequence, :]
     Tr = Tr[sequence]
+    logging.info('Shuffled Feat, Tar, Tr')
+    logging.info('New values for Feat: {0}\nTar: {1}\nTr: {2}'.format(Feat, Tar, Tr))
 
     Npop = 20  # population size
     ch_len = 18 + 1  # Solution length
     xmin = np.matlib.repmat(np.concatenate([np.zeros((1, ch_len)), 5], axis=None), Npop, 1)
     xmax = np.matlib.repmat(np.concatenate([Feat.shape[1]-1 * np.ones((1, ch_len)), 255], axis=None), Npop, 1)
-    initsol = np.zeros((xmax.shape))
+    initsol = np.zeros((Npop, xmax.shape[1]))
+    logging.info('Npop: {0}\nCh_len: {1}\nxmin shape: {2}\nxmax shape: {3}\ninit sol shape: {4}'.format(Npop, ch_len, xmin.shape, xmax.shape, initsol.shape))
     for p1 in range(Npop):
         for p2 in range(xmax.shape[1]):
             initsol[p1, p2] = uniform(xmin[p1, p2], xmax[p1, p2])
     fname = 'Obj_fun'
     Max_iter = 1
     # print(initsol.shape)
+    logging.info('Max_iter: {0}\nxmin: {1}\nxmax: {2}\ninit sol: {3}'.format(Max_iter, xmin, xmax, initsol))
 
-    print("SSO...")
+    logging.info('SSO Function Call')
     [bestfit, fitness, bestsol, time] = SSO(initsol, fname, xmin, xmax, Max_iter, Feat, Tar, Tr)
+    logging.info('Bestfit: {0}\nFitness: {1}\nBestsol: {2}\nTime: {3}'.format(bestfit, fitness, bestsol, time))
+
+    best_solutions = np.unique(np.round(bestsol))
+    logging.info('Best solution: {0}'.format(best_solutions))
 
     np.save('bestsol.npy', bestsol)
+    
 
     # array([[ 724.19058656,  925.23949655,  983.81622341,  489.02540102,
     #      248.30276763,  247.83312184,  182.64376998,  499.81998313,
@@ -172,3 +185,14 @@ if an == 1:
     #      266.612029  ,  209.93503492,  764.2901169 ,   52.48465795,
     #      665.01243928,  122.10629256,  665.52894985,  492.46032004,
     #      239.90272613,  211.05901204, 1004.13359065,  251.79266279]])
+
+    # array([[  25.7714522 ,  250.41511423, 1041.        ,  808.5544641 ,
+    #     1041.        ,  457.98179344,  593.55701581, 1041.        ,
+    #     1041.        ,  510.6197602 ,  849.47680896, 1041.        ,
+    #     1041.        ,  474.71248455, 1041.        , 1041.        ,
+    #     1041.        , 1041.        , 1041.        ,  231.35259898],
+    #    [ 500.05504768, 1041.        , 1041.        , 1041.        ,
+    #     1041.        , 1041.        , 1041.        , 1041.        ,
+    #     1041.        ,  956.35357251, 1041.        , 1041.        ,
+    #      962.4752075 , 1041.        , 1041.        , 1041.        ,
+    #     1041.        ,  517.9198227 , 1041.        ,  255.        ]])

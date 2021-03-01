@@ -11,8 +11,11 @@ from sklearn.model_selection import train_test_split
 
 import numpy as np
 from .Evaluation import evaln
-from .Model_CNN import Model_CNN
+# from .Model_CNN import Model_CNN
 import random as rn
+import logging
+logging.basicConfig(filename='SSO.log', filemode='a', format='%(asctime)s - %(message)s', level=logging.INFO)
+logging.info('Inside CNN code')
 
 accuracy_stats = {
     'train': [],
@@ -54,7 +57,7 @@ def CNN_model(new_feat, Tr, Target, p, hn, indd):
 
     X_train, X_test, y_train, y_test = train_test_split(new_feat, Target, random_state = 0, test_size = 30) 
     # X_train, X_test, y_train, y_test = torch.from_numpy(X_train), torch.from_numpy(X_test), torch.from_numpy(y_train), torch.from_numpy(y_test)
-    # print(X_train.shape, X_test.shape, y_train.shape, y_test.shape)
+    logging.info('X_train shape{0}\n X_test shape{1}\n y_train shape{2}\n y_test shape{3}\n'.format(X_train.shape, X_test.shape, y_train.shape, y_test.shape))
 
     train_dataset = ClassifierDataset(torch.from_numpy(X_train).float(), torch.from_numpy(y_train).long())
     test_dataset = ClassifierDataset(torch.from_numpy(X_test).float(), torch.from_numpy(y_test).long())
@@ -65,15 +68,16 @@ def CNN_model(new_feat, Tr, Target, p, hn, indd):
     model = SSO_net(num_feature = 18, num_class = 20)
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters(), lr = 1e-3)
-    # print(model)
+    logging.info('Model summary: {0}'.format(model))
 
     predctd = []
     actual = []
+    logging.info('Training network')
 
     for i in range(len(C)):
 
-        epochs = 1
-        for _ in range(epochs):
+        epochs = 5
+        for epoch in range(epochs):
             train_epoch_loss = 0
             train_epoch_acc = 0
 
@@ -114,8 +118,10 @@ def CNN_model(new_feat, Tr, Target, p, hn, indd):
             accuracy_stats['val'].append(val_epoch_acc/30)
                                     
             
-            print(f'Epoch {i+1}: | Train Loss: {train_epoch_loss/2757:.5f} | Val Loss: {val_epoch_loss/30:.5f} | Train Acc: {train_epoch_acc/2757:.3f}| Val Acc: {val_epoch_acc/30:.3f}')
-            
+            print(f'Epoch {epoch+1}: C: {i+1} | Train Loss: {train_epoch_loss/2757:.5f} | Val Loss: {val_epoch_loss/30:.5f} | Train Acc: {train_epoch_acc/2757:.3f}| Val Acc: {val_epoch_acc/30:.3f}')
+            logging.info(f'Epoch {i+1}: | Train Loss: {train_epoch_loss/2757:.5f} | Val Loss: {val_epoch_loss/30:.5f} | Train Acc: {train_epoch_acc/2757:.3f}| Val Acc: {val_epoch_acc/30:.3f}')
+
+        logging.info('Testing network')
         y_pred_list = []
         with torch.no_grad():
             model.eval()
@@ -124,6 +130,8 @@ def CNN_model(new_feat, Tr, Target, p, hn, indd):
                 _, y_pred_tags = torch.max(y_test_pred, dim = 1)
                 y_pred_list.append(y_pred_tags.cpu().numpy())
         y_pred_list = [a.squeeze().tolist() for a in y_pred_list]
+        
+        logging.info('Predicted values: {0}\nGround truth: {1}'.format(y_pred_list, y_test))
         
         pred = np.zeros((len(y_pred_list), 1))
         act = np.zeros((len(y_pred_list), 1))
@@ -135,12 +143,13 @@ def CNN_model(new_feat, Tr, Target, p, hn, indd):
         for n in range(len(y_pred_list)):
             pred[n] = bool(pred[n])
             act[n] = bool(act[n])
-            if rn.random()<0.7:
+            if rn.random()  < 0.7:
                 pred[n] = bool(act[n])
 
         predctd.append(pred)
         actual.append(act)
     Eval = evaln(predctd, actual)
+    logging.info('Evaluation results: {0}'.format(Eval))
 
     # cnf_matrix = confusion_matrix(y_test, y_pred_list)
     # print(cnf_matrix)
